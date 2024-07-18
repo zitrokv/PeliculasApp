@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var binding : ActivityMainBinding
     lateinit var adapter: PeliculasAdapter
-    var peliculasList = emptyList<PeliculasResponse>()
+    lateinit var peliculasList: List<PeliculasResponse>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         //super.onCreate(savedInstanceState)
@@ -31,12 +31,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        peliculasList= PeliculasProvider.findAll()
-        adapter = PeliculasAdapter(peliculasList)
-        //adapter = PeliculasAdapter(peliculasList){ opcionClick -> verDetalle( peliculasList[opcionClick])}
-
-        //searchByName(PeliculasProvider.textoBuscar)
+        //adapter = PeliculasAdapter(peliculasList)
+        peliculasList = emptyList()
+        adapter = PeliculasAdapter(peliculasList){ opcionClick -> verDetalle( peliculasList[opcionClick])}
 
         binding.recyclerView.adapter = adapter
         binding.recyclerView.layoutManager = GridLayoutManager(this, 2)
@@ -47,7 +44,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        adapter.updateData(PeliculasProvider.findAll(), "")
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -67,7 +63,6 @@ class MainActivity : AppCompatActivity() {
                     PeliculasProvider.textoBuscar = query
                     searchByName(query)
                 }
-                adapter.updateData(PeliculasProvider.findAll(),"")
 
                 return true
             }
@@ -80,20 +75,22 @@ class MainActivity : AppCompatActivity() {
         //return super.onCreateOptionsMenu(menu)
     }
 
+    //s
     private fun searchByName(query: String){
         //segundo plano ó hilo secundario paralelo
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val apiService = RetrofitUtils.getRetrofit().create(PeliculasApiService::class.java)
-                val result = apiService.getByName(query)
+                val  result = apiService.getByName(query)
 
                 runOnUiThread {
-                    if (result.response) {
-                        peliculasList = mutableListOf<PeliculasResponse>( result )
-                        adapter.updateData(peliculasList, query)
+                    if (result.response == "True") {
+                        //peliculasList = mutableListOf<PeliculasResponse>( result )
+                        peliculasList = result.results
                     } else {
-                        adapter.updateData(emptyList(), query)
+                        peliculasList = emptyList()
                     }
+                    adapter.updateData(peliculasList, query)
                 }
 
             }catch (e: Exception){
@@ -103,48 +100,35 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun verDetalle(superheroDetalle: PeliculasResponse){
-        //Log.i("verTraza", getString(superheroDetalle.name))
-        Toast.makeText(this,superheroDetalle.titulo, Toast.LENGTH_LONG).show()
-        /********************/
-        /*progressBar!!.visibility = View.VISIBLE
 
-        i = progressBar!!.progress
+    /*private fun searchByTitle(query: String){
+        //segundo plano ó hilo secundario paralelo
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val apiService = RetrofitUtils.getRetrofit().create(PeliculasApiService::class.java)
+                val  result = apiService.getByTitle(query)
 
-        Thread(Runnable {
-            // this loop will run until the value of i becomes 99
-            while (i < 1000) {
-                i += 1
-                // Update the progress bar and display the current value
-                handler.post(Runnable {
-                    progressBar!!.progress = i
-                    // setting current progress to the textview
-                    //txtView!!.text = i.toString() + "/" + progressBar.max
-                })
-                try {
-                    Thread.sleep(1000)
-                } catch (e: InterruptedException) {
-                    e.printStackTrace()
+                runOnUiThread {
+                    if (result.response) {
+                        //peliculasList = mutableListOf<PeliculasResponse>( result )
+                        peliculasList = result
+                        adapter.updateData(peliculasList, query)
+                    } else {
+                        adapter.updateData(PeliculasProvider.EmptyList(), query)
+                    }
                 }
+
+            }catch (e: Exception){
+                e.printStackTrace()
             }
+        }
 
-            // setting the visibility of the progressbar to invisible
-            // or you can use View.GONE instead of invisible
-            // View.GONE will remove the progressbar
-            progressBar!!.visibility = View.INVISIBLE
+    }*/
 
-        }).start()*/
-        /********************/
-
-        /*
+    fun verDetalle(peliculaDetalle: PeliculasResponse){
         val intent : Intent = Intent(this, DetalleActivity::class.java) //::class.java
-        intent.putExtra("HEROES_ID", superheroDetalle.id)
-
-
-        //progressBar!!.visibility = View.GONE
-        //si quieres ver la activity esto es necesario
+        intent.putExtra("FILM_ID", peliculaDetalle.id)
         startActivity(intent)
-*/
 
     }
 }

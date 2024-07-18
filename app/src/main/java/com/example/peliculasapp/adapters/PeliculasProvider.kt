@@ -1,18 +1,9 @@
 package com.example.peliculasapp.adapters
 
-import com.example.peliculasapp.data.PeliculasResponse
+import com.example.peliculasapp.data.PeliculasListResponse
 
 class PeliculasProvider {
     companion object{
-
-        fun findAll() : List<PeliculasResponse>{
-            return emptyList()
-        }
-
-        fun findInitial() : List<PeliculasResponse>{
-            return emptyList()
-        }
-
         var textoBuscar : String = "Terminator"
     }
 }
